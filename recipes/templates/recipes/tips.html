@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recipe Book Tips — Likes & Comments</title>
+  <style>
+    :root {
+      --bg: #f6efe6;
+      --card: #fffaf3;
+      --ink: #2b2118;
+      --muted: #6f5b4a;
+      --accent: #c45c26;
+      --line: #e6d5c3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    header {
+      background: #3d2b1f;
+      color: #fff8ee;
+      padding: 28px 20px;
+    }
+    header h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    header p { margin: 0; color: #e8d4c0; }
+    main { max-width: 880px; margin: 0 auto; padding: 24px 16px 48px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+    h2 { margin-top: 0; color: var(--accent); }
+    a { color: #8a3b12; }
+    code, .path {
+      font-family: Consolas, "Courier New", monospace;
+      background: #efe4d6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.92em;
+    }
+    ol { padding-left: 22px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 0.85rem; }
+    .links a { display: inline-block; margin-right: 10px; margin-bottom: 6px; }
+    .empty { color: var(--muted); font-style: italic; }
+    .comment { margin: 4px 0; }
+    footer { color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tips: find likes and comments</h1>
+    <p>Likes and comments live on each recipe. Use the links below instead of hunting through the API root.</p>
+  </header>
+  <main>
+    <section class="card">
+      <h2>Quick start</h2>
+      <ol>
+        <li>Log in as Anna at <a href="/api-auth/login/">/api-auth/login/</a> (username <code>Anna</code>).</li>
+        <li>Open a recipe, for example Secret Burger: <a href="/api/recipes/1/">/api/recipes/1/</a></li>
+        <li>On that page you will see <code>liked_by</code>, <code>likes_count</code>, and the full <code>comments</code> list.</li>
+        <li>Or use the dedicated pages: likes and comments links in the table below.</li>
+      </ol>
+      <p>Useful pages:</p>
+      <p class="links">
+        <a href="/api/">API home</a>
+        <a href="/api/recipes/">All recipes</a>
+        <a href="/api/comments/">All comments</a>
+        <a href="/admin/">Django admin</a>
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Where to click</h2>
+      <ul>
+        <li><strong>Like by recipe id:</strong> <span class="path">/api/recipes/&lt;id&gt;/like/</span> — press POST (do not fill recipe fields)</li>
+        <li><strong>Comment by recipe id:</strong> <span class="path">/api/recipes/&lt;id&gt;/comment/</span> — type text and press POST</li>
+        <li><strong>See likes:</strong> <span class="path">/api/recipes/&lt;id&gt;/likes/</span></li>
+        <li><strong>See comments:</strong> <span class="path">/api/recipes/&lt;id&gt;/comments/</span></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Recipes right now</h2>
+      {% if recipes %}
+      <table>
+        <thead>
+          <tr>
+            <th>Recipe</th>
+            <th>Likes</th>
+            <th>Comments</th>
+            <th>Open</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for recipe in recipes %}
+          <tr>
+            <td>
+              <strong>{{ recipe.title }}</strong><br>
+              <span>by {{ recipe.author.username }}</span>
+            </td>
+            <td>
+              {{ recipe.likes.count }} like{{ recipe.likes.count|pluralize }}
+              {% if recipe.likes.all %}
+                <div>{% for like in recipe.likes.all %}{{ like.user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+              {% else %}
+                <div class="empty">nobody yet</div>
+              {% endif %}
+            </td>
+            <td>
+              {{ recipe.comments.count }} comment{{ recipe.comments.count|pluralize }}
+              {% for comment in recipe.comments.all %}
+                <div class="comment"><strong>{{ comment.author.username }}:</strong> {{ comment.text }}</div>
+              {% empty %}
+                <div class="empty">no comments yet</div>
+              {% endfor %}
+            </td>
+            <td class="links">
+              <a href="/api/recipes/{{ recipe.id }}/">recipe</a>
+              <a href="/api/recipes/{{ recipe.id }}/like/">like by id</a>
+              <a href="/api/recipes/{{ recipe.id }}/comment/">comment by id</a>
+              <a href="/api/recipes/{{ recipe.id }}/likes/">see likes</a>
+              <a href="/api/recipes/{{ recipe.id }}/comments/">see comments</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="empty">No recipes yet. Create one at <a href="/api/recipes/">/api/recipes/</a>.</p>
+      {% endif %}
+    </section>
+
+    <footer>
+      Bookmark this page: <a href="/tips/">http://127.0.0.1:8000/tips/</a>
+    </footer>
+  </main>
+</body>
+</html>
